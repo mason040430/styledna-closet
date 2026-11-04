@@ -1,0 +1,10 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { recommend, isComplete, removeItem, emptyState, type Item } from './engine.ts';
+const item = (id: string, category: Item['category'], overrides: Partial<Item> = {}): Item => ({ id, category, name:id, color:'Cream',season:'All seasons',occasion:'Everyday',favorite:false,image:'data:image/jpeg;base64,x',added:'2026-01-01',...overrides });
+test('creates a complete outfit with one item per category',()=>{const result=recommend([item('t','Tops'),item('b','Bottoms'),item('s','Shoes')],emptyState.profile,'Summer');assert.equal(isComplete(result),true);assert.equal(new Set(result.map(i=>i.category)).size,result.length);});
+test('respects season filtering and recognizes incomplete wardrobes',()=>{const result=recommend([item('t','Tops',{season:'Winter'}),item('b','Bottoms')],emptyState.profile,'Summer');assert.equal(result.some(i=>i.id==='t'),false);assert.equal(isComplete(result),false);});
+test('ranks favorites and matching occasion over other pieces',()=>{const result=recommend([item('a','Tops',{occasion:'Evening'}),item('z','Tops',{favorite:true}),item('b','Bottoms')],emptyState.profile,'All seasons');assert.equal(result[0].id,'z');});
+test('dress-only wardrobes produce a complete outfit',()=>{assert.equal(isComplete(recommend([item('d','Dresses')],emptyState.profile,'All seasons')),true);});
+test('variation changes candidate selections',()=>{const items=[item('a','Tops'),item('b','Tops'),item('c','Bottoms')];assert.notEqual(recommend(items,emptyState.profile,'Summer',0)[0].id,recommend(items,emptyState.profile,'Summer',1)[0].id);});
+test('deleting a piece cleans references without deleting saved looks',()=>{const state={...emptyState,items:[item('a','Tops')],outfits:[{id:'o',name:'Look',items:['a'],favorite:false,created:'2026-01-01'}]};const result=removeItem(state,'a');assert.equal(result.items.length,0);assert.deepEqual(result.outfits[0].items,[]);assert.equal(state.items.length,1);});

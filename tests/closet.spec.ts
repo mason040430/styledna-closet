@@ -1,0 +1,41 @@
+import { test, expect } from '@playwright/test';
+test('wardrobe upload, persistence, styling, favorites, planning and mobile navigation', async ({page}) => {
+ const errors: string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/');
+ await expect(page.getByRole('button',{name:'＋ Add a piece'})).toBeEnabled();
+ const image = await page.evaluate(()=>{const c=document.createElement('canvas');c.width=100;c.height=100;const ctx=c.getContext('2d')!;ctx.fillStyle='#9baf81';ctx.fillRect(0,0,100,100);return c.toDataURL('image/png').split(',')[1];});
+ for(const [name,category] of [['Linen shirt','Tops'],['Tailored trousers','Bottoms']]) {
+  await page.getByRole('button',{name:'＋ Add a piece'}).click();
+  await page.locator('input[type=file]').setInputFiles({name:'piece.png',mimeType:'image/png',buffer:Buffer.from(image,'base64')});
+  await page.getByLabel('Piece name').fill(name);
+  await page.getByLabel('Category',{exact:true}).selectOption(category);
+  await page.getByRole('button',{name:'Add to my wardrobe'}).click();
+  await expect(page.getByText('Changes saved on this device.')).toBeVisible();
+ }
+ await page.reload();
+ await expect(page.getByRole('heading',{name:'Linen shirt'})).toBeVisible();
+ await page.getByRole('button',{name:'Favorite Linen shirt',exact:true}).click();
+ await page.getByRole('navigation').getByRole('button',{name:'Outfit studio'}).click();
+ await page.getByRole('button',{name:'Suggest a look'}).click();
+ await page.getByLabel('Give this look a name').fill('Everyday linen');
+ await page.getByRole('button',{name:'Save this look'}).click();
+ await expect(page.getByRole('heading',{name:'Everyday linen'})).toBeVisible();
+ await page.getByRole('button',{name:'Favorite Everyday linen',exact:true}).click();
+ await page.getByRole('button',{name:'Plan a day'}).click();
+ await page.getByRole('button',{name:'Plan this look'}).click();
+ await expect(page.locator('.day small',{hasText:'Everyday linen'})).toBeVisible();
+ await page.reload();
+ await page.getByRole('navigation').getByRole('button',{name:'Calendar'}).click();
+ await expect(page.locator('.day small',{hasText:'Everyday linen'})).toBeVisible();
+ await page.getByRole('navigation').getByRole('button',{name:'Insights'}).click();
+ await expect(page.getByText('100%',{exact:true})).toBeVisible();
+ await page.setViewportSize({width:390,height:844});
+ await page.getByRole('navigation').getByRole('button',{name:'My wardrobe'}).click();
+ await expect(page.getByRole('heading',{name:'Linen shirt'})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+ await page.screenshot({path:'/tmp/styledna-mobile.png',fullPage:true});
+ await page.setViewportSize({width:1440,height:1000});
+ await page.getByRole('navigation').getByRole('button',{name:'Overview'}).click();
+ await page.screenshot({path:'/tmp/styledna-desktop.png',fullPage:true});
+ expect(errors).toEqual([]);
+});
