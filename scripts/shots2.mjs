@@ -1,0 +1,17 @@
+import { chromium } from '@playwright/test';
+import path from 'node:path';
+const b = await chromium.launch({ executablePath: '/usr/bin/google-chrome' });
+const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+const p = await ctx.newPage();
+await p.goto('http://localhost:4173/'); await p.getByRole('button', { name: 'Start my closet' }).click();
+await p.goto('http://localhost:4173/#/add');
+await p.getByTestId('file-input').setInputFiles(['black-leather-boots.png','navy-striped-tee.jpg'].map(f=>path.resolve('tests/fixtures',f)));
+await p.waitForTimeout(2500); await p.evaluate(()=>window.scrollTo(0,420)); await p.waitForTimeout(300);
+await p.screenshot({ path: '/tmp/add-review.png' });
+const m = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true });
+const q = await m.newPage(); await q.goto('http://localhost:4173/'); await q.getByRole('button', { name: 'Explore the demo closet' }).click();
+await q.goto('http://localhost:4173/#/studio/demo-look-2'); await q.waitForTimeout(800); await q.screenshot({ path: '/tmp/m-studio.png' });
+await q.goto('http://localhost:4173/#/stylist'); await q.getByRole('button',{name:'What can I wear with my boots?'}).click(); await q.waitForTimeout(500);
+await q.evaluate(()=>window.scrollTo(0,700)); await q.waitForTimeout(300); await q.screenshot({ path: '/tmp/m-stylist2.png' });
+await q.goto('http://localhost:4173/#/calendar'); await q.waitForTimeout(500); await q.screenshot({ path: '/tmp/m-cal.png' });
+await b.close();

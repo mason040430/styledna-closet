@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+html { -webkit-tap-highlight-color: transparent; }
+body { font-family: Inter, system-ui, sans-serif; }
+:focus-visible { outline: 2px solid #141414; outline-offset: 2px; border-radius: 10px; }
+.font-serif { font-variation-settings: 'SOFT' 50, 'WONK' 0; letter-spacing: -0.01em; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+.fade-in { animation: fade .35s ease both; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+dialog::backdrop { background: rgb(20 20 20 / .4); }
+.grid > * { min-width: 0; }
