@@ -84,7 +84,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setReady(false); setError(null);
     try {
       const repo = createLocalRepo(w); repoRef.current = repo;
-      if (w === 'demo' && !(await repo.isSeeded())) await seedDemo(repo);
+      if (w === 'demo' && !(await repo.isSeeded())) { await repo.clearAll(); await seedDemo(repo); }
       const s = await repo.load();
       await loadImages(repo, s.items);
       setSnap(s);

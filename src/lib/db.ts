@@ -35,6 +35,8 @@ export interface Repo {
   clearAll(): Promise<void>;
 }
 
+/** Bump when the demo content changes so existing demo closets are refreshed. */
+export const DEMO_VERSION = 2;
 const dbName = (w: Workspace) => `styledna-closet-v2-${w}`;
 
 export function createLocalRepo(workspace: Workspace): Repo {
@@ -82,8 +84,8 @@ export function createLocalRepo(workspace: Workspace): Repo {
     async deleteImage(id) { await (await db()).delete('images', id); },
     async putProfile(p) { await (await db()).put('meta', p, 'profile'); },
     async putFeedback(f) { await (await db()).put('meta', f, 'feedback'); },
-    async isSeeded() { return Boolean(await (await db()).get('meta', 'seeded')); },
-    async markSeeded() { await (await db()).put('meta', true, 'seeded'); },
+    async isSeeded() { return (await (await db()).get('meta', 'seeded')) === DEMO_VERSION; },
+    async markSeeded() { await (await db()).put('meta', DEMO_VERSION, 'seeded'); },
     async clearAll() {
       const d = await db();
       await Promise.all((['items', 'outfits', 'plans', 'images', 'meta'] as const).map((s) => d.clear(s)));
